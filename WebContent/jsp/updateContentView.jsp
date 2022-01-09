@@ -52,7 +52,7 @@
 			</tr>
 			<tr>
 			<td id="title">내 용</td>
-				<td><textarea name="content" cols="72" rows="20"><%=vo.getContent()%>
+				<td><textarea name="content" cols="72" rows="20"><%=vo.getContent().replaceAll("<br>","")%>
 				</textarea>
 				</td>
 

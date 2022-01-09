@@ -42,7 +42,16 @@
             </td>
             <td>
                 <textarea name="content" cols="72" rows="20"></textarea>            
-            </td>        
+            </td>
+                
+        </tr>
+        <tr>
+        <td id="title">
+        	파일
+        	</td>
+        	<td>
+        	<input type="file" name="theFile"  multiple><br>
+        	</td>
         </tr>
       
  

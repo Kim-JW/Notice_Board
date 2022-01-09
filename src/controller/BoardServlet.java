@@ -28,10 +28,10 @@ public class BoardServlet extends HttpServlet {
 			throws ServletException, IOException {
 		String keyword = request.getParameter("keyword");
 		String strId = request.getParameter("id");
-		
+
 		String searchOption = request.getParameter("opt");
 		String condition = request.getParameter("condition");
-		
+
 		int id = 0;
 
 		if (strId != null)
@@ -39,7 +39,7 @@ public class BoardServlet extends HttpServlet {
 
 		String action = request.getParameter("action");
 
-		String writer = request.getParameter("writer");
+//		String writer = request.getParameter("writer");
 		String target_url = "/jsp/writingMain.jsp";
 
 		HttpSession session = request.getSession();
@@ -51,8 +51,8 @@ public class BoardServlet extends HttpServlet {
 		WritingDAO dao = new WritingDAO();
 
 		if (action != null) {
-			
-			if(action.equals("search")) {
+
+			if (action.equals("search")) {
 				ArrayList<WritingVO> list = dao.search(searchOption, condition);
 				if (list != null && list.size() == 0) {
 					request.setAttribute("msg", keyword + "(이)가 포함된 글이 없습니다.");
@@ -62,17 +62,18 @@ public class BoardServlet extends HttpServlet {
 				}
 			} else {
 				if (action.equals("select")) { // show detail content
-					
+
 					boolean result = dao.viewCntIncrease(id);
-					if (!result)
+					if (!result) {
 						request.setAttribute("msg", "viewCnt DB Error..");
+					} else {
+						WritingVO vo = dao.listOne(id);
+						request.setAttribute("select_list", vo);
+						target_url = "/jsp/contentView.jsp";
+					}
 
-					WritingVO vo = dao.listOne(id);
-					request.setAttribute("select_list", vo);
-					target_url = "/jsp/contentView.jsp";
-
+					// writing Modify, forward to updateContentView page
 				} else if (action.equals("modify")) {
-					System.out.println("efoawifeoiwehewf");
 					boolean result = dao.viewCntIncrease(id);
 					if (!result)
 						request.setAttribute("msg", "viewCnt DB Error..");
@@ -80,6 +81,8 @@ public class BoardServlet extends HttpServlet {
 					WritingVO vo = dao.listOne(id);
 					request.setAttribute("select_list", vo);
 					target_url = "/jsp/updateContentView.jsp";
+
+					// Logout Processing
 				} else if (action.equals("logout")) {
 					session.setAttribute("state", "nonmember");
 
@@ -92,13 +95,13 @@ public class BoardServlet extends HttpServlet {
 					}
 				}
 				request.setAttribute("list", dao.listAll());
-				
 			}
 
+			// When No action, default Processing
 		} else {
 			request.setAttribute("list", dao.listAll());
 		}
-		
+
 		request.getRequestDispatcher(target_url).forward(request, response);
 	}
 
@@ -111,9 +114,7 @@ public class BoardServlet extends HttpServlet {
 
 		String writer = request.getParameter("writer");
 		String title = request.getParameter("title");
-		String content = request.getParameter("content");
-		String writedate = request.getParameter("writedate");
-
+		String content = request.getParameter("content").replaceAll("\n", "<br>");
 		String action = request.getParameter("action");
 
 		String name = request.getParameter("name");
@@ -137,19 +138,20 @@ public class BoardServlet extends HttpServlet {
 		mvo.setName(name);
 		mvo.setPassword(password);
 		mvo.setPhone(phone);
-	
-		//vo.setId(0);
-	
+
+		// vo.setId(0);
+
 		vo.setWriter(writer);
 		vo.setTitle(title);
 		vo.setContent(content);
 
+		// Datetime
 		LocalDate currentdate = LocalDate.now();
 		vo.setWriteDate(currentdate.toString());
-		
+
 		String target_url = "/jsp/writingMain.jsp";
-		
-		response.setContentType("text/html; charset=UTF-8"); 
+
+		response.setContentType("text/html; charset=UTF-8");
 		PrintWriter out = response.getWriter();
 
 		if (action != null) {
@@ -162,52 +164,47 @@ public class BoardServlet extends HttpServlet {
 				} else {
 					request.setAttribute("msg", name + "님의 글이 입력되지 않았습니다.");
 				}
+
 			} else if (action.equals("login")) { // 로그인 화면으로부터 넘어온 정보 처리
 				// 로그인 정보 처리, 중복 확인을 하고 괜찮으면 로그인 성공!, 아니면 로그인 실패!
 				boolean result = mdao.login(id, password);
-				
+
 				if (result) {
-					System.out.println("Login Success!!");
 					session.setAttribute("state", "member");
 					session.setAttribute("id", id);
 					session.setAttribute("writer", writer);
-					
+
 					out.println("<script>alert('Login Success!'); location.href='/bbs/board';</script>");
 					out.close();
-					
+
 				} else {
 					out.println("<script>alert('Login fail!'); location.href='/bbs/jsp/login.jsp';</script>");
 					out.close();
-					System.out.println("Login fail!!!");
 				}
 
 			} else if (action.equals("signup")) {
-				
-				if(id == null || password == null || name == null || phone == null) {
+
+				if (id == null || password == null || name == null || phone == null) {
 					out.println("<script>alert('Signup fail!'); location.href='/bbs/jsp/signup.jsp';</script>");
 					out.close();
 					request.setAttribute("msg", "회원 가입 실패 정보를 올바르게 입력해주세요");
 				} else {
 					boolean result = mdao.signup(mvo);
-					
+
 					if (result) {
-						
+
 						out.println("<script>alert('Signup Success!'); location.href='/bbs/board';</script>");
 						out.close();
-						
-						//request.setAttribute("msg", "회원가입 성공");
-						// request.getRequestDispatcher("/jsp/writingMain.jsp").forward(request,
-						// response);
 					} else {
 						out.println("<script>alert('Signup fail!'); location.href='/bbs/jsp/signup.jsp';</script>");
 						out.close();
 //						target_url = "/bbs/jsp/signup.jsp";
 //						System.out.println("회원 가입 실패 ");
-						
+
 					}
 				}
 			} else { // 수정
-				//vo.setId(Integer.parseInt(action));
+				// vo.setId(Integer.parseInt(action));
 				System.out.println("Update Check");
 				int wrting_id = Integer.parseInt(request.getParameter("writing_id"));
 				vo.setId(wrting_id);
@@ -223,8 +220,8 @@ public class BoardServlet extends HttpServlet {
 
 		}
 		request.setAttribute("list", dao.listAll());
-		request.getRequestDispatcher("/jsp/writingMain.jsp").forward(request, response);
+		request.getRequestDispatcher(target_url).forward(request, response);
 
 	}
-
+	
 }
