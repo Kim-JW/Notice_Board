@@ -23,8 +23,8 @@ import model.vo.WritingVO;
 @WebServlet("/board")
 public class BoardServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	
-	int splitNum = 3;
+
+	int splitNum = 5;
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -45,30 +45,30 @@ public class BoardServlet extends HttpServlet {
 		String target_url = "/jsp/writingMain.jsp";
 
 		HttpSession session = request.getSession();
-		
-		//String state = session.getAttribute("state");
-		
-		int currentPage = 1; 
-		
+
+		// String state = session.getAttribute("state");
+
+		int currentPage = 1;
+
 		if ((session.getAttribute("state") == null)) {
 			session.setAttribute("state", "nonMember");
 			session.setAttribute("currentPage", 1);
 		}
-		
-		if(request.getParameter("currentPage") != null) {
-			 currentPage = Integer.parseInt(request.getParameter("currentPage"));
-			 System.out.println("---------");
+
+		if (request.getParameter("currentPage") != null) {
+			currentPage = Integer.parseInt(request.getParameter("currentPage"));
+			System.out.println("---------");
 		}
 
 		WritingDAO dao = new WritingDAO();
 
 		System.out.println("Page num = " + dao.pageNum(splitNum));
 		session.setAttribute("pageNum", dao.pageNum(splitNum));
-		
+
 		System.out.println(request.getAttribute("currentPage"));
-		
+
 		session.setAttribute("currentPage", currentPage);
-		
+
 		if (action != null) {
 
 			if (action.equals("search")) {
@@ -113,16 +113,17 @@ public class BoardServlet extends HttpServlet {
 						request.setAttribute("msg", "글이 삭제되지 않았습니다.");
 					}
 				}
-				request.setAttribute("list", dao.listAll((currentPage-1)*splitNum,splitNum));
+				request.setAttribute("list", dao.listAll((currentPage - 1) * splitNum, splitNum));
 				// 10 page, 1 - ( 1-10), 2 - (11-20), 3 - (21-30)
 			}
+			request.getRequestDispatcher(target_url).forward(request, response);
 
 			// When No action, default Processing
 		} else {
-			request.setAttribute("list", dao.listAll((currentPage-1)*splitNum,splitNum));
+			request.setAttribute("list", dao.listAll((currentPage - 1) * splitNum, splitNum));
+			request.getRequestDispatcher(target_url).forward(request, response);
 		}
 
-		request.getRequestDispatcher(target_url).forward(request, response);
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -134,9 +135,9 @@ public class BoardServlet extends HttpServlet {
 
 		String writer = request.getParameter("writer");
 		String title = request.getParameter("title");
-	
+
 		String content = request.getParameter("content");
-		if(content != null && !content.isEmpty()) {
+		if (content != null && !content.isEmpty()) {
 			content = content.replaceAll("\n", "<br>");
 		}
 		String action = request.getParameter("action");
@@ -209,7 +210,9 @@ public class BoardServlet extends HttpServlet {
 
 			} else if (action.equals("signup")) {
 
-				if (id == null || password == null || name == null || phone == null) {
+				System.out.println("password = " + password);
+
+				if (id.equals("") || password.equals("") || name.equals("") || phone.equals("")) {
 					out.println("<script>alert('Signup fail!'); location.href='/bbs/jsp/signup.jsp';</script>");
 					out.close();
 					request.setAttribute("msg", "회원 가입 실패 정보를 올바르게 입력해주세요");
@@ -225,7 +228,6 @@ public class BoardServlet extends HttpServlet {
 						out.close();
 //						target_url = "/bbs/jsp/signup.jsp";
 //						System.out.println("회원 가입 실패 ");
-
 					}
 				}
 			} else { // 수정
@@ -242,9 +244,9 @@ public class BoardServlet extends HttpServlet {
 					request.setAttribute("msg", name + "님의 글이 수정되지 않았습니다.");
 				}
 			}
-
 		}
-		request.setAttribute("list", dao.listAll((currentPage-1)*splitNum+1,splitNum));
+
+		request.setAttribute("list", dao.listAll((currentPage - 1) * splitNum, splitNum));
 		request.getRequestDispatcher(target_url).forward(request, response);
 
 	}

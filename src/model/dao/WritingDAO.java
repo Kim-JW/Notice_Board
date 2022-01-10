@@ -11,23 +11,44 @@ import java.util.ArrayList;
 import model.vo.WritingVO;
 
 public class WritingDAO implements Writing {
-	
-	public int pageNum(int writingNum) {
+
+	public int search_pageNum(int writingNum, String option, String keyword) {
 		int num = 0;
-		
+
 		Connection conn = connectDB();
-		try(Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery(
-						"select count(id) from writing");) {
-			while(rs.next()) {
+		try (Statement stmt = conn.createStatement();
+				ResultSet rs = stmt.executeQuery("select count(id) from writing where " + option + " like '%" + keyword + "%'");) {
+			while (rs.next()) {
 				num = rs.getInt(1);
 			}
-		} catch (SQLException e ) {
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		close(conn);
-		
-		if(num % writingNum > 0) {
+
+		if (num % writingNum > 0) {
+			num = (num / writingNum) + 1;
+		} else {
+			num = num / writingNum;
+		}
+		return num;
+	}
+
+	public int pageNum(int writingNum) {
+		int num = 0;
+
+		Connection conn = connectDB();
+		try (Statement stmt = conn.createStatement();
+				ResultSet rs = stmt.executeQuery("select count(id) from writing");) {
+			while (rs.next()) {
+				num = rs.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		close(conn);
+
+		if (num % writingNum > 0) {
 			num = (num / writingNum) + 1;
 		} else {
 			num = num / writingNum;
@@ -40,8 +61,7 @@ public class WritingDAO implements Writing {
 		ArrayList<WritingVO> list = new ArrayList<>();
 		Connection conn = connectDB();
 		try (Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery(
-						"select id, title, writer, date_format(writedate, '%Y년 %m월 %d일'), cnt "
+				ResultSet rs = stmt.executeQuery("select id, title, writer, date_format(writedate, '%Y년 %m월 %d일'), cnt "
 						+ "from writing order by id desc limit " + startNum + ", " + splitNum);) {
 			WritingVO vo;
 			while (rs.next()) {
@@ -65,7 +85,7 @@ public class WritingDAO implements Writing {
 		Connection conn = connectDB();
 		try (Statement stmt = conn.createStatement();
 				ResultSet rs = stmt.executeQuery("select id, title, writer, date_format(writedate, '%Y년 %m월 %d일'), cnt"
-						+ " from writing where " + option + " like '%"+ keyword + "%'");) {
+						+ " from writing where " + option + " like '%" + keyword + "%'");) {
 			WritingVO vo;
 			while (rs.next()) {
 				System.out.println(rs.getString(2));
@@ -125,8 +145,8 @@ public class WritingDAO implements Writing {
 	public boolean update(WritingVO vo) {
 		boolean result = true;
 		Connection conn = connectDB();
-		try (PreparedStatement pstmt = conn.prepareStatement("update writing set " + "title = ?, "
-				+ "content = ? " + "where id = ?");) {
+		try (PreparedStatement pstmt = conn
+				.prepareStatement("update writing set " + "title = ?, " + "content = ? " + "where id = ?");) {
 			pstmt.setString(1, vo.getTitle());
 			pstmt.setString(2, vo.getContent());
 			pstmt.setInt(3, vo.getId());
@@ -157,13 +177,14 @@ public class WritingDAO implements Writing {
 
 	@Override
 	public WritingVO listOne(int id) {
-		
+
 		WritingVO vo = null;
-		
+
 		Connection conn = connectDB();
 		try (Statement stmt = conn.createStatement();
 				ResultSet rs = stmt.executeQuery(
-						"select id, writer, title, content, date_format(writedate, '%Y년 %m월 %d일'), cnt from writing where id = " + id);) {
+						"select id, writer, title, content, date_format(writedate, '%Y년 %m월 %d일'), cnt from writing where id = "
+								+ id);) {
 			vo = new WritingVO();
 			rs.next();
 			vo.setId(rs.getInt(1));
@@ -180,11 +201,12 @@ public class WritingDAO implements Writing {
 
 		return vo;
 	}
-	
+
 	public boolean viewCntIncrease(int id) {
-		
+
 		Connection conn = connectDB();
-		try (PreparedStatement pstmt = conn.prepareStatement("update writing set " + "cnt = cnt +1 " + "where id = ?");) {
+		try (PreparedStatement pstmt = conn
+				.prepareStatement("update writing set " + "cnt = cnt +1 " + "where id = ?");) {
 			pstmt.setInt(1, id);
 			pstmt.executeUpdate();
 			return true;
@@ -207,7 +229,5 @@ public class WritingDAO implements Writing {
 		}
 
 	}
-	
-	
 
 }
