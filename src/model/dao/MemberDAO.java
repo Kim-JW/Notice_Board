@@ -38,6 +38,10 @@ public class MemberDAO {
 	
 	public boolean isNewId(String id) {
 		
+		if(id.equals("")) {
+			return false;
+		}
+		
 		Connection conn = connectDB();
 		try(Statement stmt = conn.createStatement();
 				ResultSet rs = stmt.executeQuery("select id from member");){	

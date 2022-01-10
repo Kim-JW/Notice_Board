@@ -103,6 +103,10 @@ public class BoardServlet extends HttpServlet {
 
 					// Logout Processing
 				} else if (action.equals("logout")) {
+					response.setContentType("text/html; charset=UTF-8");
+                    PrintWriter out = response.getWriter();
+                    out.println("<script>alert('로그아웃 되었습니다!'); location.href='/bbs/board';</script>");
+                    out.close();
 					session.setAttribute("state", "nonmember");
 
 				} else { // delete
@@ -194,6 +198,7 @@ public class BoardServlet extends HttpServlet {
 			} else if (action.equals("login")) { // 로그인 화면으로부터 넘어온 정보 처리
 				// 로그인 정보 처리, 중복 확인을 하고 괜찮으면 로그인 성공!, 아니면 로그인 실패!
 				boolean result = mdao.login(id, password);
+
 
 				if (result) {
 					session.setAttribute("state", "member");
