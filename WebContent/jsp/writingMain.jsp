@@ -84,8 +84,16 @@ td:nth-child(3) {
 	
 	<%
 	}
+	
+	int pageNum = (int)session.getAttribute("pageNum");
+	for(int i = 1; i <= pageNum; i++ ) {
 	%>
 	
+	<a href="/bbs/board?currentPage=<%=i%>"> <%=i %></a>
+	
+	<%
+	}
+	%>
 	<br>
     <div id="searchForm">
         <form action= "/bbs/board">

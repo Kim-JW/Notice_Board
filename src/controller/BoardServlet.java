@@ -23,6 +23,8 @@ import model.vo.WritingVO;
 @WebServlet("/board")
 public class BoardServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	
+	int splitNum = 3;
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -43,13 +45,30 @@ public class BoardServlet extends HttpServlet {
 		String target_url = "/jsp/writingMain.jsp";
 
 		HttpSession session = request.getSession();
-
-		if (session.getAttribute("state") == null) {
+		
+		//String state = session.getAttribute("state");
+		
+		int currentPage = 1; 
+		
+		if ((session.getAttribute("state") == null)) {
 			session.setAttribute("state", "nonMember");
+			session.setAttribute("currentPage", 1);
+		}
+		
+		if(request.getParameter("currentPage") != null) {
+			 currentPage = Integer.parseInt(request.getParameter("currentPage"));
+			 System.out.println("---------");
 		}
 
 		WritingDAO dao = new WritingDAO();
 
+		System.out.println("Page num = " + dao.pageNum(splitNum));
+		session.setAttribute("pageNum", dao.pageNum(splitNum));
+		
+		System.out.println(request.getAttribute("currentPage"));
+		
+		session.setAttribute("currentPage", currentPage);
+		
 		if (action != null) {
 
 			if (action.equals("search")) {
@@ -94,12 +113,13 @@ public class BoardServlet extends HttpServlet {
 						request.setAttribute("msg", "글이 삭제되지 않았습니다.");
 					}
 				}
-				request.setAttribute("list", dao.listAll());
+				request.setAttribute("list", dao.listAll((currentPage-1)*splitNum,splitNum));
+				// 10 page, 1 - ( 1-10), 2 - (11-20), 3 - (21-30)
 			}
 
 			// When No action, default Processing
 		} else {
-			request.setAttribute("list", dao.listAll());
+			request.setAttribute("list", dao.listAll((currentPage-1)*splitNum,splitNum));
 		}
 
 		request.getRequestDispatcher(target_url).forward(request, response);
@@ -114,7 +134,11 @@ public class BoardServlet extends HttpServlet {
 
 		String writer = request.getParameter("writer");
 		String title = request.getParameter("title");
-		String content = request.getParameter("content").replaceAll("\n", "<br>");
+	
+		String content = request.getParameter("content");
+		if(content != null && !content.isEmpty()) {
+			content = content.replaceAll("\n", "<br>");
+		}
 		String action = request.getParameter("action");
 
 		String name = request.getParameter("name");
@@ -150,6 +174,7 @@ public class BoardServlet extends HttpServlet {
 		vo.setWriteDate(currentdate.toString());
 
 		String target_url = "/jsp/writingMain.jsp";
+		int currentPage = (int) session.getAttribute("currentPage");
 
 		response.setContentType("text/html; charset=UTF-8");
 		PrintWriter out = response.getWriter();
@@ -219,9 +244,9 @@ public class BoardServlet extends HttpServlet {
 			}
 
 		}
-		request.setAttribute("list", dao.listAll());
+		request.setAttribute("list", dao.listAll((currentPage-1)*splitNum+1,splitNum));
 		request.getRequestDispatcher(target_url).forward(request, response);
 
 	}
-	
+
 }

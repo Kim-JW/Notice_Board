@@ -11,7 +11,7 @@ public interface Writing {
 	public boolean insert(WritingVO vo);
 	public boolean update(WritingVO vo);
 	public boolean delete(int id);
-	public List<WritingVO> listAll();
+	public List<WritingVO> listAll(int startNum, int endNum);
 	public WritingVO listOne(int id);
 	
 }

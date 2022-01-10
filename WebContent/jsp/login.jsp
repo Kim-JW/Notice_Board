@@ -27,7 +27,7 @@
 
 </button>
   		<a class="navbar-brand" href="/bbs/board">메인화면으로</a>
-  		<a href="join.jsp">회원가입</a>
+  		<a href="/bbs/jsp/signup.jsp">회원가입</a>
   	</div>
 
 </body>

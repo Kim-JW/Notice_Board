@@ -11,14 +11,38 @@ import java.util.ArrayList;
 import model.vo.WritingVO;
 
 public class WritingDAO implements Writing {
+	
+	public int pageNum(int writingNum) {
+		int num = 0;
+		
+		Connection conn = connectDB();
+		try(Statement stmt = conn.createStatement();
+				ResultSet rs = stmt.executeQuery(
+						"select count(id) from writing");) {
+			while(rs.next()) {
+				num = rs.getInt(1);
+			}
+		} catch (SQLException e ) {
+			e.printStackTrace();
+		}
+		close(conn);
+		
+		if(num % writingNum > 0) {
+			num = (num / writingNum) + 1;
+		} else {
+			num = num / writingNum;
+		}
+		return num;
+	}
 
 	// 번호, 제목, 작성자, 작성일 ,조회수
-	public ArrayList<WritingVO> listAll() {
+	public ArrayList<WritingVO> listAll(int startNum, int splitNum) {
 		ArrayList<WritingVO> list = new ArrayList<>();
 		Connection conn = connectDB();
 		try (Statement stmt = conn.createStatement();
 				ResultSet rs = stmt.executeQuery(
-						"select id, title, writer, date_format(writedate, '%Y년 %m월 %d일'), cnt from writing order by id desc");) {
+						"select id, title, writer, date_format(writedate, '%Y년 %m월 %d일'), cnt "
+						+ "from writing order by id desc limit " + startNum + ", " + splitNum);) {
 			WritingVO vo;
 			while (rs.next()) {
 				vo = new WritingVO();
@@ -183,5 +207,7 @@ public class WritingDAO implements Writing {
 		}
 
 	}
+	
+	
 
 }
